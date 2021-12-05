@@ -32,6 +32,9 @@ export class Lamp360EyesPlatform implements DynamicPlatformPlugin {
 
   discoverDevices() {
     for (const device of (this.config as Lamp360EyesConfig | PlatformConfig).devices) {
+      if (!device.name || !device.address) {
+        break;
+      }
       const uuid = this.api.hap.uuid.generate(device.name + device.address + device.port);
 
       const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
