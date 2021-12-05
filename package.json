@@ -1,5 +1,5 @@
 {
-  "displayName": "Lamp360Eyes",
+  "displayName": "Homebridge Lamp360Eyes",
   "name": "@mzyy94/homebridge-plugin-360eyes",
   "version": "1.0.0",
   "description": "Control light brightness of 360 eyes camera.",
