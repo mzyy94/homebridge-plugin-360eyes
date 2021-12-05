@@ -80,12 +80,13 @@ export class Lamp360EyesPlatformAccessory {
     if (this.state.On) {
       if (brightness === 0) {
         brightness = 100;
+        this.state.Brightness = 100;
       }
     } else {
       brightness = 0;
     }
 
-    this.setBrightness(brightness);
+    await this.sendData(brightness);
 
     this.platform.log.debug('Set Characteristic On ->', value);
   }
@@ -120,9 +121,14 @@ export class Lamp360EyesPlatformAccessory {
    * These are sent when the user changes the state of an accessory, for example, changing the Brightness
    */
   async setBrightness(value: CharacteristicValue) {
+    this.state.Brightness = value as number;
+    await this.sendData(this.state.Brightness);
+    this.platform.log.debug('Set Characteristic Brightness -> ', value);
+  }
+
+  async sendData(brightness: number) {
     clearTimeout(destroyHandler);
 
-    this.state.Brightness = value as number;
     if (con?.destroyed !== false) {
       con = await new Promise<Socket>((resolve, reject) => {
         const { device } = this.accessory.context;
@@ -132,7 +138,7 @@ export class Lamp360EyesPlatformAccessory {
     }
 
     const buf = Buffer.from(payload, 'hex');
-    buf.writeUInt8(this.state.Brightness, 48);
+    buf.writeUInt8(brightness, 48);
 
     await new Promise((resolve, reject) => {
       con?.write(new Uint8Array(buf), (err) => {
@@ -146,8 +152,6 @@ export class Lamp360EyesPlatformAccessory {
     destroyHandler = setTimeout(() => {
       con?.destroy();
     }, 10*1000);
-
-    this.platform.log.debug('Set Characteristic Brightness -> ', value);
   }
 
 }
