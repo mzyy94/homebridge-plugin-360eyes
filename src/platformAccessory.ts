@@ -8,11 +8,6 @@ export class Lamp360EyesPlatformAccessory {
   private service: Service;
   private light: LightControl;
 
-  private state = {
-    On: false,
-    Brightness: 100,
-  };
-
   constructor(
     private readonly platform: Lamp360EyesPlatform,
     private readonly accessory: PlatformAccessory<Lamp360Context>,
@@ -41,25 +36,13 @@ export class Lamp360EyesPlatformAccessory {
   }
 
   async setOn(value: CharacteristicValue) {
-    this.state.On = value as boolean;
-
-    let brightness = this.state.Brightness;
-    if (this.state.On) {
-      if (brightness === 0) {
-        brightness = 100;
-        this.state.Brightness = 100;
-      }
-    } else {
-      brightness = 0;
-    }
-
-    await this.light.setBrightness(brightness);
+    await this.light.setOn(value as boolean);
 
     this.platform.log.debug('Set Characteristic On ->', value);
   }
 
   async getOn(): Promise<CharacteristicValue> {
-    const isOn = this.state.On;
+    const isOn = this.light.on;
 
     this.platform.log.debug('Get Characteristic On ->', isOn);
 
@@ -67,9 +50,7 @@ export class Lamp360EyesPlatformAccessory {
   }
 
   async setBrightness(value: CharacteristicValue) {
-    this.state.Brightness = value as number;
-
-    await this.light.setBrightness(this.state.Brightness);
+    await this.light.setBrightness(value as number);
 
     this.platform.log.debug('Set Characteristic Brightness -> ', value);
   }

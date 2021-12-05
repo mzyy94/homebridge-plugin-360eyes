@@ -7,6 +7,9 @@ export class LightControl {
   private con: Socket | null = null;
   private destroyHandler: NodeJS.Timeout | undefined;
 
+  public brightness = 0;
+  public on = false;
+
   constructor(private readonly address: string, private readonly port: number) {
   }
 
@@ -40,7 +43,25 @@ export class LightControl {
     }, 10*1000);
   }
 
+  async setOn(on: boolean) {
+    this.on = on;
+    let brightness = this.brightness;
+    if (on) {
+      if (brightness === 0) {
+        brightness = 100;
+        this.brightness = 100;
+      }
+    } else {
+      brightness = 0;
+    }
+
+    const buf = Buffer.from(payload, 'hex');
+    buf.writeUInt32LE(brightness, 48);
+    return this.sendData(buf);
+  }
+
   async setBrightness(brightness: number) {
+    this.brightness = brightness;
     const buf = Buffer.from(payload, 'hex');
     buf.writeUInt32LE(brightness, 48);
     return this.sendData(buf);
