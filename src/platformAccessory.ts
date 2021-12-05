@@ -5,6 +5,10 @@ import { Lamp360EyesPlatform } from './platform';
 import type { Lamp360Context } from './types';
 
 const payload = 'ccddeeffb04f0000010000008800000000000000fabab63bcaf55b01640000009d4f0000fabab63bcaf55b016400000064000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+
+let con: Socket | null = null;
+let destroyHandler: NodeJS.Timeout;
+
 /**
  * Platform Accessory
  * An instance of this class is created for each accessory your platform registers
@@ -116,28 +120,32 @@ export class Lamp360EyesPlatformAccessory {
    * These are sent when the user changes the state of an accessory, for example, changing the Brightness
    */
   async setBrightness(value: CharacteristicValue) {
-    // implement your own code to set the brightness
+    clearTimeout(destroyHandler);
+
     this.state.Brightness = value as number;
-
-    const {device} = this.accessory.context;
-
-    const con = await new Promise<Socket>((resolve, reject) => {
-      const con = connect(device.port ?? 23456, device.address, () => resolve(con));
-      setTimeout(reject, 5000);
-    });
+    if (con?.destroyed !== false) {
+      con = await new Promise<Socket>((resolve, reject) => {
+        const { device } = this.accessory.context;
+        const con = connect(device.port ?? 23456, device.address, () => resolve(con));
+        setTimeout(reject, 5000);
+      });
+    }
 
     const buf = Buffer.from(payload, 'hex');
     buf.writeUInt8(this.state.Brightness, 48);
 
     await new Promise((resolve, reject) => {
-      con.write(new Uint8Array(buf), (err) => {
+      con?.write(new Uint8Array(buf), (err) => {
         if (err) {
           return reject(err);
         }
         resolve(null);
       });
     });
-    con.destroy();
+
+    destroyHandler = setTimeout(() => {
+      con?.destroy();
+    }, 10*1000);
 
     this.platform.log.debug('Set Characteristic Brightness -> ', value);
   }
