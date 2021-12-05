@@ -1,7 +1,28 @@
 import { connect, Socket } from 'net';
 
-// eslint-disable-next-line
-const payload = 'ccddeeffb04f0000010000008800000000000000fabab63bcaf55b01640000009d4f0000fabab63bcaf55b016400000064000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+class Packet {
+  static readonly magic = Buffer.from('ccddeeff', 'hex');
+  static readonly delimiter = Buffer.from('fabab63bcaf55b01', 'hex');
+
+  data = Buffer.from([]);
+  opcode = 0;
+
+  static brightness(brightness: number) {
+    const data1 = Buffer.from(new Uint32Array([100, 0x4f9d]).buffer);
+    const data2 = Buffer.from(new Uint32Array([100, brightness, 0, 0]).buffer);
+    const packet = new Packet();
+    packet.data = Buffer.concat([data1, Packet.delimiter, data2]);
+    packet.opcode = 0x4fb0;
+    return packet;
+  }
+
+  generate() {
+    const header = Buffer.from(new Uint32Array([this.opcode, 1, 0, 0]).buffer);
+    const buf = Buffer.concat([Packet.magic, header, Packet.delimiter, this.data]);
+    buf.writeUInt32LE(buf.length, 12);
+    return buf;
+  }
+}
 
 export class LightControl {
   private con: Socket | null = null;
@@ -55,15 +76,13 @@ export class LightControl {
       brightness = 0;
     }
 
-    const buf = Buffer.from(payload, 'hex');
-    buf.writeUInt32LE(brightness, 48);
+    const buf = Packet.brightness(brightness).generate();
     return this.sendData(buf);
   }
 
   async setBrightness(brightness: number) {
     this.brightness = brightness;
-    const buf = Buffer.from(payload, 'hex');
-    buf.writeUInt32LE(brightness, 48);
+    const buf = Packet.brightness(brightness).generate();
     return this.sendData(buf);
   }
 }
