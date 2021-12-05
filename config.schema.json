@@ -11,7 +11,7 @@
         "required": false,
         "default": "CamLamp360"
       },
-      "deivces": {
+      "devices": {
         "title": "Devices",
         "description": "List of devices",
         "type": "array",
@@ -30,7 +30,7 @@
               "required": true
             },
             "port": {
-              "title": "Name",
+              "title": "Port",
               "type": "number",
               "required": false,
               "default": 23456
@@ -48,7 +48,7 @@
               "default": "Default-Model"
             },
             "serial": {
-              "title": "SerialNumber",
+              "title": "Serial Number",
               "type": "string",
               "required": false,
               "default": "0123456789"
