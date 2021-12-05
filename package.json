@@ -25,6 +25,9 @@
   "keywords": [
     "homebridge-plugin"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {},
   "devDependencies": {
     "@types/node": "^16.10.9",
