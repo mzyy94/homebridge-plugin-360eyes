@@ -1,8 +1,10 @@
+import { connect, Socket } from 'net';
 import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
 
 import { Lamp360EyesPlatform } from './platform';
 import type { Lamp360Context } from './types';
 
+const payload = 'ccddeeffb04f0000010000008800000000000000fabab63bcaf55b01640000009d4f0000fabab63bcaf55b016400000064000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
 /**
  * Platform Accessory
  * An instance of this class is created for each accessory your platform registers
@@ -70,6 +72,16 @@ export class Lamp360EyesPlatformAccessory {
   async setOn(value: CharacteristicValue) {
     // implement your own code to turn your device on/off
     this.state.On = value as boolean;
+    let brightness = this.state.Brightness;
+    if (this.state.On) {
+      if (brightness === 0) {
+        brightness = 100;
+      }
+    } else {
+      brightness = 0;
+    }
+
+    this.setBrightness(brightness);
 
     this.platform.log.debug('Set Characteristic On ->', value);
   }
@@ -106,6 +118,26 @@ export class Lamp360EyesPlatformAccessory {
   async setBrightness(value: CharacteristicValue) {
     // implement your own code to set the brightness
     this.state.Brightness = value as number;
+
+    const {device} = this.accessory.context;
+
+    const con = await new Promise<Socket>((resolve, reject) => {
+      const con = connect(device.port ?? 23456, device.address, () => resolve(con));
+      setTimeout(reject, 5000);
+    });
+
+    const buf = Buffer.from(payload, 'hex');
+    buf.writeUInt8(this.state.Brightness, 48);
+
+    await new Promise((resolve, reject) => {
+      con.write(new Uint8Array(buf), (err) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(null);
+      });
+    });
+    con.destroy();
 
     this.platform.log.debug('Set Characteristic Brightness -> ', value);
   }
