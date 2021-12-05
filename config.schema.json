@@ -34,24 +34,6 @@
               "type": "number",
               "required": false,
               "default": 23456
-            },
-            "manufacturer": {
-              "title": "Manufacturer",
-              "type": "string",
-              "required": false,
-              "default": "Default-Manufacturer"
-            },
-            "model": {
-              "title": "Model",
-              "type": "string",
-              "required": false,
-              "default": "Default-Model"
-            },
-            "serial": {
-              "title": "Serial Number",
-              "type": "string",
-              "required": false,
-              "default": "0123456789"
             }
           }
         }

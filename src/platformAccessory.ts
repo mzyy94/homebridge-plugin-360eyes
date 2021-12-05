@@ -20,12 +20,13 @@ export class Lamp360EyesPlatformAccessory {
 
     this.light = new LightControl(device.address, device.port ?? 23456);
 
-    this.light.init().then(() => {
+    this.light.init().then(({model, serialnumber, manufacturer, version}) => {
       // set accessory information
       this.accessory.getService(this.platform.Service.AccessoryInformation)!
-        .setCharacteristic(this.platform.Characteristic.Manufacturer, device.manufacturer ?? 'Default-Manufacturer')
-        .setCharacteristic(this.platform.Characteristic.Model, device.model ?? 'Default-Model')
-        .setCharacteristic(this.platform.Characteristic.SerialNumber, device.serial ?? '0123456789');
+        .setCharacteristic(this.platform.Characteristic.Manufacturer, manufacturer)
+        .setCharacteristic(this.platform.Characteristic.Model, model)
+        .setCharacteristic(this.platform.Characteristic.FirmwareRevision, version)
+        .setCharacteristic(this.platform.Characteristic.SerialNumber, serialnumber);
 
       this.service.getCharacteristic(this.platform.Characteristic.On)
         .onSet(this.setOn.bind(this)).onGet(this.getOn.bind(this));
