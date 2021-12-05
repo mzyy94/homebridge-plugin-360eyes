@@ -1,16 +1,16 @@
 {
   "private": true,
-  "displayName": "Plugin Name",
-  "name": "homebridge-plugin-name",
+  "displayName": "Lamp360Eyes",
+  "name": "@mzyy94/homebridge-plugin-360eyes",
   "version": "1.0.0",
-  "description": "A short description about what your plugin does.",
+  "description": "Control light brightness of 360 eyes camera.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/USERNAME/GITHUB_PROJECT_NAME.git"
+    "url": "git://github.com/mzyy94/homebridge-plugin-360eyes.git"
   },
   "bugs": {
-    "url": "https://github.com/USERNAME/GITHUB_PROJECT_NAME/issues"
+    "url": "https://github.com/mzyy94/homebridge-plugin-360eyes/issues"
   },
   "engines": {
     "node": ">=14.18.1",
