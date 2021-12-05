@@ -8,8 +8,35 @@
       "name": {
         "title": "Name",
         "type": "string",
-        "required": true,
+        "required": false,
         "default": "CamLamp360"
+      },
+      "deivces": {
+        "title": "Devices",
+        "description": "List of devices",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Name",
+              "type": "string",
+              "required": true,
+              "default": "Garage LampCam"
+            },
+            "address": {
+              "title": "IP Address",
+              "type": "string",
+              "required": true
+            },
+            "port": {
+              "title": "Name",
+              "type": "number",
+              "required": false,
+              "default": 23456
+            }
+          }
+        }
       }
     }
   }
