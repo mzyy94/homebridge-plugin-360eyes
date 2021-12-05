@@ -1,7 +1,10 @@
 export interface Lamp360EyesDevice {
     name: string;
     address: string;
-    port: number;
+    port?: number;
+    manufacturer?: string;
+    model?: string;
+    serial?: string;
 }
 
 export interface Lamp360EyesConfig {

@@ -32,11 +32,13 @@ export class Lamp360EyesPlatformAccessory {
     private readonly accessory: PlatformAccessory<Lamp360Context>,
   ) {
 
+    const { device } = accessory.context;
+
     // set accessory information
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
-      .setCharacteristic(this.platform.Characteristic.Manufacturer, 'Default-Manufacturer')
-      .setCharacteristic(this.platform.Characteristic.Model, 'Default-Model')
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, 'Default-Serial');
+      .setCharacteristic(this.platform.Characteristic.Manufacturer, device.manufacturer ?? 'Default-Manufacturer')
+      .setCharacteristic(this.platform.Characteristic.Model, device.model ?? 'Default-Model')
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, device.serial ?? '0123456789');
 
     // get the LightBulb service if it exists, otherwise create a new LightBulb service
     // you can create multiple services for each accessory
@@ -44,7 +46,7 @@ export class Lamp360EyesPlatformAccessory {
 
     // set the service name, this is what is displayed as the default name on the Home app
     // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
-    this.service.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.name);
+    this.service.setCharacteristic(this.platform.Characteristic.Name, device.name);
 
     // each service must implement at-minimum the "required characteristics" for the given service type
     // see https://developers.homebridge.io/#/service/Lightbulb
