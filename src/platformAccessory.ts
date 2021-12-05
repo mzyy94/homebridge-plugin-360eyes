@@ -1,17 +1,12 @@
-import { connect, Socket } from 'net';
 import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
 
 import { Lamp360EyesPlatform } from './platform';
 import type { Lamp360Context } from './types';
-
-// eslint-disable-next-line
-const payload = 'ccddeeffb04f0000010000008800000000000000fabab63bcaf55b01640000009d4f0000fabab63bcaf55b016400000064000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
-
-let con: Socket | null = null;
-let destroyHandler: NodeJS.Timeout;
+import { LightControl } from './lightControl';
 
 export class Lamp360EyesPlatformAccessory {
   private service: Service;
+  private light: LightControl;
 
   private state = {
     On: false,
@@ -25,20 +20,24 @@ export class Lamp360EyesPlatformAccessory {
 
     const { device } = accessory.context;
 
-    // set accessory information
-    this.accessory.getService(this.platform.Service.AccessoryInformation)!
-      .setCharacteristic(this.platform.Characteristic.Manufacturer, device.manufacturer ?? 'Default-Manufacturer')
-      .setCharacteristic(this.platform.Characteristic.Model, device.model ?? 'Default-Model')
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, device.serial ?? '0123456789');
-
     this.service = this.accessory.getService(this.platform.Service.Lightbulb) || this.accessory.addService(this.platform.Service.Lightbulb);
     this.service.setCharacteristic(this.platform.Characteristic.Name, device.name);
 
-    this.service.getCharacteristic(this.platform.Characteristic.On)
-      .onSet(this.setOn.bind(this)).onGet(this.getOn.bind(this));
+    this.light = new LightControl(device.address, device.port ?? 23456);
 
-    this.service.getCharacteristic(this.platform.Characteristic.Brightness)
-      .onSet(this.setBrightness.bind(this));
+    this.light.init().then(() => {
+      // set accessory information
+      this.accessory.getService(this.platform.Service.AccessoryInformation)!
+        .setCharacteristic(this.platform.Characteristic.Manufacturer, device.manufacturer ?? 'Default-Manufacturer')
+        .setCharacteristic(this.platform.Characteristic.Model, device.model ?? 'Default-Model')
+        .setCharacteristic(this.platform.Characteristic.SerialNumber, device.serial ?? '0123456789');
+
+      this.service.getCharacteristic(this.platform.Characteristic.On)
+        .onSet(this.setOn.bind(this)).onGet(this.getOn.bind(this));
+
+      this.service.getCharacteristic(this.platform.Characteristic.Brightness)
+        .onSet(this.setBrightness.bind(this));
+    });
   }
 
   async setOn(value: CharacteristicValue) {
@@ -54,7 +53,7 @@ export class Lamp360EyesPlatformAccessory {
       brightness = 0;
     }
 
-    await this.sendData(brightness);
+    await this.light.setBrightness(brightness);
 
     this.platform.log.debug('Set Characteristic On ->', value);
   }
@@ -69,36 +68,10 @@ export class Lamp360EyesPlatformAccessory {
 
   async setBrightness(value: CharacteristicValue) {
     this.state.Brightness = value as number;
-    await this.sendData(this.state.Brightness);
+
+    await this.light.setBrightness(this.state.Brightness);
+
     this.platform.log.debug('Set Characteristic Brightness -> ', value);
-  }
-
-  async sendData(brightness: number) {
-    clearTimeout(destroyHandler);
-
-    if (con?.destroyed !== false) {
-      con = await new Promise<Socket>((resolve, reject) => {
-        const { device } = this.accessory.context;
-        const con = connect(device.port ?? 23456, device.address, () => resolve(con));
-        setTimeout(reject, 5000);
-      });
-    }
-
-    const buf = Buffer.from(payload, 'hex');
-    buf.writeUInt8(brightness, 48);
-
-    await new Promise((resolve, reject) => {
-      con?.write(new Uint8Array(buf), (err) => {
-        if (err) {
-          return reject(err);
-        }
-        resolve(null);
-      });
-    });
-
-    destroyHandler = setTimeout(() => {
-      con?.destroy();
-    }, 10*1000);
   }
 
 }
