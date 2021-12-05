@@ -1,5 +1,4 @@
 {
-  "private": true,
   "displayName": "Lamp360Eyes",
   "name": "@mzyy94/homebridge-plugin-360eyes",
   "version": "1.0.0",
